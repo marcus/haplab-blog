@@ -43,6 +43,11 @@
 
         <p>That's what I mean by correct by default.</p>
 
+        <figure>
+          <img src="/images/correct-by-default-diagram.png" alt="Diagram showing the correct by default cycle: conversation flows through the foundation (skills, tools, tests, review chain) to produce correct software, which enriches the foundation" class="lightbox-trigger" style="cursor: zoom-in;">
+          <figcaption>Conversations produce correct software when the foundation knows what things mean. The output feeds back into the foundation.</figcaption>
+        </figure>
+
         <h2>The scaffolding</h2>
 
         <p>The foundation is a few things working together. Skills files encode the design conventions, architecture patterns, and workflow expectations for the project. <a href="https://github.com/marcus/td">td</a> handles task management. The plan tool handles decomposition. The loop script handles execution. Test Squad does QA by using features the way a user would, and reporting both human UX issues and agent experience problems. The codebase is organized so agents can navigate it the same way a new developer would: predictable directory structure, consistent naming, architecture notes that explain why things are set up the way they are.</p>
@@ -61,15 +66,20 @@
 
         <p>The foundation gets richer with each project. When the loop built Designer's collaboration system, it already knew about the component patterns, the API conventions, and the design token system, because those had been built by earlier iterations and folded back into the project context. New features start from that accumulated foundation. Each project benefits from the last.</p>
 
-        <p>This is different from vibe coding in a specific way. Vibe coding produces working software, and the speed is real. The gap shows up when you start building on top of what you made, when a new feature needs to fit correctly with everything else, or when a bug fix can't introduce three others. With the right foundation in place, agents extend the system correctly. Without it, they extend it plausibly. Plausible is fine for prototypes. Correct matters when you're adding the fiftieth feature and it needs to work with the other forty-nine.</p>
+        <p>This is different from vibe coding in a specific way. The gap shows up when you start building on top of what you made, when a new feature needs to fit correctly with everything else, or when a bug fix can't introduce three others. With the right foundation in place, agents extend the system correctly. Without it, they extend it plausibly.</p>
 
         <h2>Where this is going</h2>
 
         <p>The loop built Designer, a design tool that would have been a team-sized project not long ago, over a weekend. The constraint wasn't writing code. It was deciding what to build and writing tickets that described it clearly enough for the loop to work them.</p>
 
+        <figure>
+          <img src="/images/test-squad-planner.jpg" alt="The Perch planner showing the Test Squad plan with areas for concept, agent design, execution engine, and reporting" class="lightbox-trigger" style="cursor: zoom-in;">
+          <figcaption>The Test Squad plan in Perch's planner, created through a conversation on Discord.</figcaption>
+        </figure>
+
         <p>As the scaffolding gets better, that constraint gets easier too. More of the "how" gets encoded. Less has to be specified each time. The gap between describing something and having working software shrinks.</p>
 
-        <p>I don't have a neat conclusion for where this ends up. But the fact that one developer can build a Figma-style design tool over a weekend, mostly by writing good tickets, seems like it's pointing somewhere.</p>
+        <p>The fact that one developer can build a Figma-style design tool over a weekend, mostly by writing good tickets, seems like it's pointing somewhere interesting.</p>
 
       </div>
     </article>
