@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vibe Coding Doesn't Have to Mean Bad Software — Haplab Blog</title>
-  <meta name="description" content="I built a Figma clone over a weekend without reading any of the code. Here's the system that kept the quality high.">
+  <title>The Continuous Developer — Haplab Blog</title>
+  <meta name="description" content="What happens when you organize a codebase so agents can work on it continuously, and the only human job is writing tickets?">
   <link rel="alternate" type="application/rss+xml" title="Haplab Blog" href="/feed.xml">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
@@ -26,54 +26,73 @@
   <main>
     <article>
       <header class="post-header">
-        <h1>Vibe Coding Doesn't Have to Mean Bad Software</h1>
-        <div class="post-meta">March 21, 2026 &middot; Marcus Vorwaller</div>
+        <h1>The Continuous Developer</h1>
+        <div class="post-meta">March 22, 2026 &middot; Marcus Vorwaller</div>
       </header>
 
       <div class="post-content">
 
-        <p>I went to bed Friday night and woke up Saturday morning to a working design tool. By Sunday there were 93 source files, 51,000 lines of Svelte and TypeScript, and 244 commits. I didn't write any of it. I've never even looked at the code.</p>
+        <p>I have a design tool called Designer that I've been building inside a larger dev dashboard project. Over the past week or so, I've had a coding agent running in a loop against the codebase, picking up tasks from a backlog, implementing them, committing, and moving on. When I add a ticket, it gets worked on. When there's nothing in the queue, the loop waits. I don't start sessions or type prompts. I just write tickets.</p>
 
-        <p>I've been calling it Designer. It's a Figma-style design tool that I'm building as part of a larger dev dashboard. Google had just released updates to Stitch, and since theirs isn't open source, I figured I'd try building my own. The whole thing is vibe coded, and I think it came out surprisingly well.</p>
+        <p>The loop has been running more or less continuously. It's produced 93 source files, about 51,000 lines of Svelte and TypeScript, and 244 commits. I didn't write any of that code and I haven't read it. It was all built by Claude sessions working one task at a time off a shared backlog.</p>
 
-        <p>I want to share how I set it up because I think anyone could do this.</p>
+        <p>I think there's something interesting here beyond the output. It's starting to feel less like "using AI to code" and more like a different way of working entirely.</p>
 
-        <h2>The loop</h2>
+        <h2>How it works</h2>
 
-        <p>I used a Ralph loop, which is a pattern that's been floating around since mid-2025 — you put a coding agent in a <code>while true</code> loop and let it grind through a plan. I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. The key thing about td is that when an agent finishes a piece of work, it can't approve its own review. A different agent session has to look at it.</p>
+        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and code reviews. When an agent finishes a piece of work, it can't approve its own review — a different agent session has to look at it. That happens naturally because each loop iteration is a fresh session with no memory of the last one.</p>
 
-        <p>I wrote a plan, broke it into about 90 tasks under one epic — things like layer panel keyboard navigation, image element support, the auto-layout engine, canvas version history — and started the loop. It's a bash script that runs Claude one iteration at a time. Each iteration picks the top-priority open task, builds it, commits, and exits. The script handles rate limits, timeouts, and fallback models.</p>
+        <p>The loop is a bash script. Each iteration picks the highest-priority open task, builds it, commits, and exits. The script handles rate limits, timeouts, and model fallbacks. I started it with about 90 tasks in the backlog, but I've been adding new ones as I think of them. The loop doesn't care when tasks were added or by whom. It just works the queue.</p>
 
-        <p>Then I went to sleep.</p>
+        <p>The codebase itself is organized so that agents can navigate it. There are skills files that describe patterns, conventions, and how things connect. Tests cover enough surface area that the agent can verify its own work before submitting for review. The directory structure is predictable. None of this was done specifically for the loop — it's just how I've been building things for a while now — but it turns out that a codebase organized for agents is also a codebase that can be developed continuously.</p>
 
-        <h2>Why I think it worked</h2>
+        <h2>The shift</h2>
 
-        <p>The plan was good. I spent several hours upfront thinking about what Designer needed and breaking it into pieces that were each completable in a single agent session. That planning work is what I think made the difference more than anything else.</p>
+        <p>The part I keep thinking about is that the loop doesn't need me to do anything except add tickets. I don't open an IDE. I don't start a Claude session. I don't write a prompt. I think about what the software needs, write a ticket describing it, set a priority, and drop it in the backlog. It gets picked up and built.</p>
 
-        <p>td also lets me add tasks to the backlog at any time, and the loop picks them up in priority order. So while the agent was working through the plan overnight, I could think of things during the day and just toss them into the queue. I didn't have to restart anything or coordinate with what was running.</p>
+        <p>Sometimes I write tickets on my phone while I'm out walking. Sometimes I think of something over coffee and file it before I forget. The loop is always there, working through whatever's at the top of the queue. When I check in later, the feature exists.</p>
 
-        <p>The independent review helped too. Every feature got looked at by a fresh agent session that had no context from the one that built it. That caught problems that would have compounded if they'd gone unnoticed.</p>
+        <p>This is starting to feel like the job description is changing. For this project, what I do is:</p>
 
-        <p>There's also a little TUI dashboard that shows what the loop is doing — task counts, commits, velocity, logs. I could check in on it when I wanted to and mostly just let it run when I didn't.</p>
+        <ul>
+          <li>Plan what the software should be</li>
+          <li>Write tickets that describe the work clearly enough for an agent to complete</li>
+          <li>Review what was built (or let the next loop iteration review it)</li>
+          <li>Occasionally add bugs or improvements when I notice something</li>
+        </ul>
 
-        <h2>What Designer has after a weekend</h2>
+        <p>That's it. There's no coding step. There's no "sit down and implement this" step. The backlog is the interface to the codebase.</p>
 
-        <p>"Figma clone" could mean a lot of things, so here's what's there:</p>
+        <h2>What makes a codebase work this way</h2>
+
+        <p>Not every codebase could run like this. The ones that can tend to have a few things in common:</p>
+
+        <p>The structure is legible. An agent landing in the repo for the first time can figure out where things go and how they connect. Consistent naming, a clear directory layout, and documentation that describes the architecture all help. If a senior engineer would need a week to get oriented, an agent will struggle too.</p>
+
+        <p>There's a test suite that the agent can run. It doesn't need to be comprehensive, but it needs to cover enough that the agent can tell whether it broke something. Agents are good at writing new tests for the features they build, but they need an existing suite to run against.</p>
+
+        <p>The tickets are specific. "Make the app faster" won't produce good results. "Add viewport culling to the canvas renderer so elements outside the visible area aren't drawn" will. The quality of the output tracks directly to the quality of the ticket. This is where the human work has moved — from writing code to writing good descriptions of what the code should do.</p>
+
+        <p>And there's a review mechanism. Agents make mistakes. They over-engineer things, miss edge cases, and sometimes misunderstand the task entirely. Having every piece of work reviewed by a separate session with fresh context catches a lot of this before it compounds.</p>
+
+        <h2>What Designer has</h2>
+
+        <p>To give a sense of what this kind of continuous development produces, here's where Designer is after about a week of the loop running:</p>
 
         <table>
           <thead>
             <tr><th>Area</th><th>Details</th></tr>
           </thead>
           <tbody>
-            <tr><td>Canvas</td><td>Pan/zoom, viewport culling, LOD rendering that auto-degrades at low zoom, dirty-region tracking, minimap</td></tr>
+            <tr><td>Canvas</td><td>Pan/zoom, viewport culling, LOD rendering, dirty-region tracking, minimap</td></tr>
             <tr><td>Elements</td><td>Rectangles, ellipses, lines, paths, text, groups, frames, images. Gradients, drop shadows, blur, stroke alignment.</td></tr>
-            <tr><td>Frames</td><td>Auto-layout with direction, gap, padding, wrap, and constraints. Device presets for iPhone 16 Pro, iPad, Desktop HD, and others.</td></tr>
-            <tr><td>Layers</td><td>Search with name filter and type chips. Full keyboard nav. Batch visibility/lock toggle. Drag reorder.</td></tr>
-            <tr><td>Tools</td><td>Select, Rectangle, Ellipse, Frame, Line, Pencil, Text, Measure, Hand, Eyedropper. Same shortcuts as Figma.</td></tr>
-            <tr><td>Styling</td><td>Color picker with swatches. Gradient editor. Multiple fills and strokes per element.</td></tr>
-            <tr><td>Collaboration</td><td>Real-time cursors, remote selections, participant roster, WebSocket sync.</td></tr>
-            <tr><td>Versioning</td><td>Branches, diffs, merge UI, version history, proposals.</td></tr>
-            <tr><td>Animation</td><td>Timeline panel, keyframe editor, property interpolation engine.</td></tr>
+            <tr><td>Frames</td><td>Auto-layout with direction, gap, padding, wrap, and constraints. Device presets.</td></tr>
+            <tr><td>Layers</td><td>Search with name filter and type chips. Full keyboard nav. Batch visibility/lock. Drag reorder.</td></tr>
+            <tr><td>Tools</td><td>Select, Rectangle, Ellipse, Frame, Line, Pencil, Text, Measure, Hand, Eyedropper.</td></tr>
+            <tr><td>Styling</td><td>Color picker, gradient editor, multiple fills and strokes per element.</td></tr>
+            <tr><td>Collaboration</td><td>Real-time cursors, remote selections, WebSocket sync.</td></tr>
+            <tr><td>Versioning</td><td>Branches, diffs, merge UI, version history.</td></tr>
+            <tr><td>Animation</td><td>Timeline panel, keyframe editor, property interpolation.</td></tr>
             <tr><td>Prototyping</td><td>Prototype viewer, click targets, flow diagrams.</td></tr>
             <tr><td>Plugins</td><td>Sandboxed runtime, API bridge, SDK types.</td></tr>
             <tr><td>Export</td><td>PNG and SVG with scale and format options.</td></tr>
@@ -81,42 +100,21 @@
           </tbody>
         </table>
 
-        <p>Figma has hundreds of engineers and a decade of development behind it, so I'm not comparing. But for a weekend, I think this is pretty remarkable, and it gives a sense of what's becoming possible for a single person.</p>
+        <p>93 source files, about 51,000 lines of code, 355 passing tests. The loop is still running. There are 38 tasks left in the backlog, and I keep adding more.</p>
 
-        <table>
-          <thead>
-            <tr><th></th><th></th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Source files</td><td>93</td></tr>
-            <tr><td>Lines of code</td><td>~51,000</td></tr>
-            <tr><td>Commits in 48 hours</td><td>244</td></tr>
-            <tr><td>Tasks completed</td><td>~50</td></tr>
-            <tr><td>Tasks still open</td><td>~38</td></tr>
-            <tr><td>Test files</td><td>21 (355 tests, all passing)</td></tr>
-            <tr><td>E2E test suites</td><td>12 (~11,000 lines)</td></tr>
-            <tr><td>Time I spent at the keyboard</td><td>Maybe 2 hours</td></tr>
-          </tbody>
-        </table>
+        <h2>Where I think this goes</h2>
 
-        <h2>Where it fell short</h2>
+        <p>I've been a developer for over 20 years and a manager for the last several. The feeling of working this way is different from anything I've experienced before. It's not pair programming. It's not delegating to a junior developer. It's closer to being a product owner who happens to have an engineering team that works 24 hours a day and never needs a standup.</p>
 
-        <p>Some tasks came back from review with real problems and needed a second pass. The agent occasionally built something adjacent to what I asked for. Visual judgment calls were harder for it than logic. There's a 4,196-line component file that needs to be broken up, and there's already a task in the queue for that.</p>
+        <p>I think as more codebases get organized to work well with agents — legible structure, good tests, clear documentation — this kind of continuous development is going to become common. The loop technology is simple. The hard part is making the codebase ready for it, and that's mostly just good engineering practices that we should have been doing anyway.</p>
 
-        <p>I also had to restart the loop a few times because I messed up the script.</p>
+        <p>A lot of people are working this way already or starting to. Things are moving fast and I'm curious to see where it all goes.</p>
 
-        <h2>Where I think this is going</h2>
-
-        <p>I spent my weekend planning, designing task structure, and occasionally checking the dashboard. The code wrote itself. I think that ratio is going to keep shifting, and I find that genuinely exciting.</p>
-
-        <p>A lot of people are doing this kind of thing right now. I went from "I wonder if I could build a design tool" on Friday to having one on Sunday, and I know I'm not the only one having weekends like this. It's a fun time to be making software.</p>
-
-        <p>I plan to open source all of this. Some of it already is:</p>
+        <p>If you want to try something similar, the tools I used are open source:</p>
 
         <ul>
-          <li><a href="https://github.com/marcus/td">td</a> &mdash; the task manager that runs the whole workflow</li>
-          <li><a href="https://haplab.com">Designer</a> &mdash; the design tool</li>
-          <li><a href="https://github.com/marcus/marcus-skills">marcus-skills</a> &mdash; the Ralph loop scripts and TUI dashboard</li>
+          <li><a href="https://github.com/marcus/td">td</a> — task manager built for AI agents</li>
+          <li><a href="https://github.com/marcus/marcus-skills">marcus-skills</a> — the loop scripts and TUI dashboard</li>
         </ul>
 
       </div>
