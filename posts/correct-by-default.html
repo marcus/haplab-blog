@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Correct by Default — Haplab Blog</title>
+  <meta name="description" content="When the foundation is right, conversations produce correct software instead of plausible software. What that looks like in practice.">
+  <link rel="alternate" type="application/rss+xml" title="Haplab Blog" href="/feed.xml">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    // Prevent flash of wrong theme
+    (function(){var t=localStorage.getItem('haplab-theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="site-title">
+      <a href="/"><span class="dot"></span>Haplab Blog</a>
+    </div>
+    <nav>
+      <ul class="site-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/feed.xml">RSS</a></li>
+        <li><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light/dark mode">🌙</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <article>
+      <header class="post-header">
+        <h1>Correct by Default</h1>
+        <div class="post-meta">March 22, 2026 &middot; Marcus Vorwaller</div>
+      </header>
+
+      <div class="post-content">
+
+        <p>At the end of <a href="/posts/ralph-loop.html">The Backlog Loop</a>, I mentioned that software is becoming a commodity and that the bottleneck isn't writing code anymore. That felt like something worth sitting with, so here's more of what I mean.</p>
+
+        <p>When I type "plan a new feature" to my OpenClaw agent, I don't explain what planning means. The agent runs the plan CLI, which decomposes the feature into tasks with priorities and dependencies, surfaces open questions, and creates tickets ready to work. When I say "start the loop," it creates an epic, kicks off the iteration script, and monitoring starts automatically. The correctness comes from what's already in place, not from the prompt itself.</p>
+
+        <p>That's what I mean by correct by default.</p>
+
+        <h2>The scaffolding</h2>
+
+        <p>The foundation is a few things working together. Skills files encode the design conventions, architecture patterns, and workflow expectations for the project. <a href="https://github.com/marcus/td">td</a> handles task management. The plan tool handles decomposition. The loop script handles execution. Test Squad does QA by using features the way a user would, and reporting both human UX issues and agent experience problems. The codebase is organized so agents can navigate it the same way a new developer would: predictable directory structure, consistent naming, architecture notes that explain why things are set up the way they are.</p>
+
+        <p>When that foundation exists, agents don't invent an architecture. They work within yours.</p>
+
+        <p><a href="/posts/ralph-loop.html">The Backlog Loop</a> describes Designer, a Figma-style design tool built almost entirely by the loop over a weekend: about 50,000 lines of Svelte and TypeScript across 78 components. The output uses Linear's design patterns and Svelte 5 runes consistently throughout because those conventions were encoded upfront in skills files that every session reads. The conversation was about what to build. The implementation followed from what was already in place.</p>
+
+        <p>Here's what the actual flow looked like for one specific feature. I wanted to add real-time monitoring to the Designer canvas so users could see when an agent was working on their document. I described this to my OpenClaw agent on Discord. She created a ticket, I bumped the priority, and the next loop iteration picked it up. The agent ran the plan tool, which produced a short spec and flagged three open questions about animation timing and how to handle concurrent agent operations. I answered those in the Discord thread. The plan became tasks. The loop worked them. By the time I came back to my desk, the feature was done, the tests were passing, and there were screenshots of it working.</p>
+
+        <p>No part of that required me to explain what a plan is, what the loop does, or what "done" means. Those things are encoded in the scaffolding.</p>
+
+        <h2>What makes it compound</h2>
+
+        <p>One piece of the system that I underestimated at first: each loop iteration reviews the previous task before picking up the next one, and the reviewing session starts completely clean, with no memory of what was built or why. It reads the code cold and flags anything that looks off. An agent reviewing its own work tends to check that things match its own intentions. A separate session catches different categories of mistakes. Before a task closes, there's a proof requirement too: passing tests and screenshots of the feature working. Correctness gets verified before it accumulates.</p>
+
+        <p>The foundation gets richer with each project. When the loop built Designer's collaboration system, it already knew about the component patterns, the API conventions, and the design token system, because those had been built by earlier iterations and folded back into the project context. New features start from that accumulated foundation. Each project benefits from the last.</p>
+
+        <p>This is different from vibe coding in a specific way. Vibe coding produces working software, and the speed is real. The gap shows up when you start building on top of what you made, when a new feature needs to fit correctly with everything else, or when a bug fix can't introduce three others. With the right foundation in place, agents extend the system correctly. Without it, they extend it plausibly. Plausible is fine for prototypes. Correct matters when you're adding the fiftieth feature and it needs to work with the other forty-nine.</p>
+
+        <h2>Where this is going</h2>
+
+        <p>The loop built Designer, a design tool that would have been a team-sized project not long ago, over a weekend. The constraint wasn't writing code. It was deciding what to build and writing tickets that described it clearly enough for the loop to work them.</p>
+
+        <p>As the scaffolding gets better, that constraint gets easier too. More of the "how" gets encoded. Less has to be specified each time. The gap between describing something and having working software shrinks.</p>
+
+        <p>I don't have a neat conclusion for where this ends up. But the fact that one developer can build a Figma-style design tool over a weekend, mostly by writing good tickets, seems like it's pointing somewhere.</p>
+
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <span>Marcus Vorwaller</span>
+    <a href="https://haplab.com">haplab.com</a>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="/theme.js"></script>
+  <script src="/lightbox.js"></script>
+</body>
+</html>
