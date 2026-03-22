@@ -8,11 +8,11 @@
     <atom:link href="https://blog.haplab.com/feed.xml" rel="self" type="application/rss+xml"/>
 
     <item>
-      <title>Hello World</title>
-      <link>https://blog.haplab.com/posts/hello-world.html</link>
-      <guid>https://blog.haplab.com/posts/hello-world.html</guid>
-      <pubDate>Sat, 21 Mar 2026 00:00:00 +0000</pubDate>
-      <description>First post. A quick look at what we're building here and why.</description>
+      <title>I Let an AI Code for 36 Hours Straight. Here's the System That Made It Work.</title>
+      <link>https://blog.haplab.com/posts/ralph-loop.html</link>
+      <guid>https://blog.haplab.com/posts/ralph-loop.html</guid>
+      <pubDate>Sat, 21 Mar 2026 00:00:00 -0700</pubDate>
+      <description>How a living task queue, independent review, and context isolation turned a Ralph loop into a real Figma clone in a weekend.</description>
     </item>
 
   </channel>
