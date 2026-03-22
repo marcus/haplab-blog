@@ -26,124 +26,113 @@
   <main>
     <article>
       <header class="post-header">
-        <h1>I Let an AI Code for 36 Hours Straight. Here's the System That Made It Work.</h1>
+        <h1>I Let an AI Code for 36 Hours Straight</h1>
         <div class="post-meta">March 21, 2026 &middot; Marcus Vorwaller</div>
       </header>
 
       <div class="post-content">
 
-        <p>Last week I decided to build a Figma clone. Not a toy demo&mdash;a real design tool. Canvas with pan/zoom. Layers with search, keyboard nav, drag reorder. Auto-layout with flexbox-style distribution. Frames with constraints and device presets. A pen tool. Gradient fills and drop shadows. Animation timelines with keyframes. Branching and version history. Real-time collaboration with cursors. A plugin system with a sandboxed runtime. An AI chat panel that can modify the canvas directly.</p>
+        <p>Friday night I decided to build a Figma clone. By Sunday afternoon I had one.</p>
 
-        <p>I built it inside <a href="https://github.com/marcus/perch">Perch</a>, a dev dashboard I've been working on. Google had just released updates to Stitch that I wanted to try out, and since theirs isn't open source, I figured I'd just build my own.</p>
+        <p>93 source files. 51,000 lines of code. 244 commits. I wrote almost none of it by hand. A Claude agent ran in a loop for a day and a half while I mostly did other things.</p>
 
-        <p>By the time I'm writing this, there are 93 source files in the designer module, over 51,000 lines of code, and 244 commits in the last 48 hours. I wrote almost none of it by hand. A Claude agent has been running in a loop for 36+ hours, picking up tasks, implementing them, committing, and moving on.</p>
+        <p>I should back up.</p>
 
-        <h2>Not another loop post</h2>
+        <h2>Why a Figma clone</h2>
 
-        <p>The "Ralph loop" pattern&mdash;named after Ralph Wiggum, because the agent just keeps going regardless&mdash;has been around since mid-2025. Geoffrey Huntley popularized it: put a coding CLI in a <code>while true</code> loop, point it at a plan, let it run. There are several open source implementations now. The basic loop is simple, and a lot has been written about it.</p>
+        <p>Google released updates to Stitch that I wanted to play with. Stitch isn't open source, so I decided to build my own version inside <a href="https://github.com/marcus/perch">Perch</a>, a dev dashboard I've been working on. This started as "let me see how far I can take this over a weekend" and turned into something that actually works.</p>
 
-        <p>I want to talk about the system <em>around</em> the loop, because the loop itself isn't the interesting part. The interesting part is what makes 36 hours of autonomous coding produce good code instead of a mess.</p>
+        <h2>The Ralph loop</h2>
 
-        <h2>The setup</h2>
+        <p>The "Ralph loop" has been around since mid-2025. Geoffrey Huntley popularized it: put a coding agent in a <code>while true</code> loop, point it at a plan, let it run. Named after Ralph Wiggum because the agent just keeps going regardless. There are several open source versions. The basic loop isn't complicated.</p>
 
-        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built specifically for AI agents. It tracks issues, priorities, sessions, and reviews. The key feature: agents can implement work, but they can't review their own work. A different session has to do the review.</p>
+        <p>What I want to write about is everything around the loop, because the loop by itself produces mediocre output. The scaffolding is what made this work.</p>
 
-        <p>Here's how the designer project started:</p>
+        <h2>How I set it up</h2>
 
-        <ol>
-          <li>I wrote a high-level plan. "Build a Figma-class design tool. Here are the major feature areas." A planner tool broke this into concrete goals.</li>
-          <li>I created an epic in td and decomposed the plan into ~90 individual tasks, each scoped to one feature. Layer panel keyboard navigation. Image element support. Auto-layout engine. Canvas version history. Each one small enough for a single agent session.</li>
-          <li>I started the Ralph loop: a bash script that runs <code>claude</code> in print mode, once per iteration, with a prompt that says "check td, pick the highest-priority open task, implement it, commit, and exit."</li>
-        </ol>
+        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. One rule: agents can implement work, but they can't review their own work. A different session has to do that.</p>
 
-        <p>Then I went to bed.</p>
+        <p>I wrote a high-level plan, broke it into about 90 tasks under a single epic, and scoped each one to a single feature. Layer panel keyboard navigation. Image element support. Auto-layout engine. Canvas version history. Each task small enough for one agent session.</p>
 
-        <h2>Three things that make it work</h2>
+        <p>The loop is a bash script. It runs <code>claude</code> in print mode, one iteration at a time. Each iteration: check td, pick the highest-priority open task, implement it, commit, exit. Script handles rate limit backoff, a 45-minute timeout per iteration, and a fallback model if the primary is overloaded.</p>
 
-        <h3>The task queue is alive</h3>
+        <p>I started it and went to bed.</p>
 
-        <p>Most Ralph loop setups work from a static PRD or a markdown checklist. Mine uses td as a living backlog. While the agent is grinding through P2 tasks at 3 AM, I can pick up my phone and add a new task to the epic. "Canvas doesn't render on mobile Safari." Done. It gets added at P3 and the loop picks it up when the higher priority stuff clears. I don't have to restart anything or think about scheduling. I just throw work into the queue.</p>
+        <h2>What made the difference</h2>
 
-        <h3>Independent review catches real problems</h3>
+        <p><strong>A live task queue instead of a static checklist.</strong> Most Ralph loops work from a PRD or a markdown file. Mine uses td as a backlog that I can add to at any time. The agent was grinding through P2 tasks at 3 AM. I woke up, thought of something on my phone, filed a P3 bug. The loop picked it up later that day. I never restarted anything.</p>
 
-        <p>td enforces that the implementing agent can't close its own review. On iteration N, the agent builds the layer panel search feature and submits it for review. On iteration N+1, a fresh agent instance&mdash;with no context from the previous session&mdash;reviews it. Different eyes every time. Not "did the tests pass" but an actual code review with a clean perspective. It catches over-engineering, missing edge cases, and style inconsistencies that the implementing agent was blind to.</p>
+        <p><strong>Forced independent review.</strong> On iteration N, the agent builds the layer panel search. It submits the work for review. On iteration N+1, a brand new agent instance with zero context from the last session reviews it. Fresh eyes every time. Not "do the tests pass" but actual code review. It catches stuff the implementing agent can't see.</p>
 
-        <h3>Context isolation keeps quality high</h3>
+        <p><strong>One task per iteration.</strong> Each agent starts with context for exactly one task. No accumulated bloat. No confusion about which file it was editing three features ago. Iteration 200 is as sharp as iteration 1. People who try long-running agents usually hit a wall where quality drops as context fills up. This sidesteps it completely.</p>
 
-        <p>Each agent iteration starts from scratch with context only for one task. After 36 hours of continuous work, there's no accumulated context window bloat, no confusion about which file it was editing three features ago. Iteration 200 is as sharp as iteration 1. Most people who try long-running agents hit a wall where quality degrades as context fills up. With one task per iteration, that never happens.</p>
+        <h2>What got built</h2>
 
-        <h2>How deep is this clone?</h2>
-
-        <p>I want to be specific about this, because "I built a Figma clone" can mean anything from a canvas with drag-and-drop rectangles to an actual design tool. Here's what exists and works:</p>
+        <p>"Figma clone" can mean anything from a canvas with draggable squares to a real design tool. I want to be specific.</p>
 
         <table>
           <thead>
-            <tr><th>Category</th><th>What's built</th></tr>
+            <tr><th>Area</th><th>What exists</th></tr>
           </thead>
           <tbody>
-            <tr><td>Canvas</td><td>Pan/zoom, viewport culling, LOD rendering (auto-degrades at low zoom for performance), dirty-region tracking, minimap</td></tr>
-            <tr><td>Elements</td><td>Rectangles, ellipses, lines, paths, text, groups, frames, images. Gradient fills, drop shadows, blur effects, stroke alignment options.</td></tr>
-            <tr><td>Frames &amp; Layout</td><td>Auto-layout (direction, gap, padding, wrap, constraints), device presets (iPhone 16 Pro, iPad, Desktop HD, etc.), sizing modes</td></tr>
-            <tr><td>Layer panel</td><td>Search with name filter and type chips, full keyboard navigation (arrow keys, expand/collapse, Enter/Escape, Space, Delete, F2 rename), batch visibility/lock toggle, drag reorder</td></tr>
-            <tr><td>Tools</td><td>Select, Rectangle, Ellipse, Frame, Line, Pencil, Text, Measure, Hand, Eyedropper&mdash;same keyboard shortcuts as Figma (V, R, E, F, etc.)</td></tr>
-            <tr><td>Styling</td><td>Color picker with swatches, gradient editor, multiple fills/strokes per element, effects stack</td></tr>
-            <tr><td>Collaboration</td><td>Real-time cursors, remote selections, participant roster, WebSocket sync</td></tr>
-            <tr><td>Versioning</td><td>Branches, diffs, merge dialogs, version history, proposals</td></tr>
-            <tr><td>Animation</td><td>Timeline panel, keyframe editor, animation engine with property interpolation</td></tr>
-            <tr><td>Prototyping</td><td>Prototype viewer with click targets, flow diagram visualization</td></tr>
-            <tr><td>Plugins</td><td>Plugin system with sandboxed runtime, API bridge, SDK types</td></tr>
-            <tr><td>Export</td><td>PNG, SVG export with scale and format options</td></tr>
-            <tr><td>AI integration</td><td>Agent chat panel that can create and modify canvas elements directly</td></tr>
+            <tr><td>Canvas</td><td>Pan/zoom, viewport culling, LOD rendering that auto-degrades at low zoom, dirty-region tracking, minimap</td></tr>
+            <tr><td>Elements</td><td>Rectangles, ellipses, lines, paths, text, groups, frames, images. Gradients, drop shadows, blur, stroke alignment.</td></tr>
+            <tr><td>Frames</td><td>Auto-layout with direction, gap, padding, wrap, constraints. Device presets for iPhone 16 Pro, iPad, Desktop HD, etc.</td></tr>
+            <tr><td>Layers</td><td>Search with name filter and type chips. Full keyboard nav. Batch visibility/lock toggle. Drag reorder.</td></tr>
+            <tr><td>Tools</td><td>Select, Rectangle, Ellipse, Frame, Line, Pencil, Text, Measure, Hand, Eyedropper. Same shortcuts as Figma.</td></tr>
+            <tr><td>Styling</td><td>Color picker with swatches. Gradient editor. Multiple fills and strokes per element.</td></tr>
+            <tr><td>Collaboration</td><td>Real-time cursors, remote selections, participant roster, WebSocket sync.</td></tr>
+            <tr><td>Versioning</td><td>Branches, diffs, merge UI, version history, proposals.</td></tr>
+            <tr><td>Animation</td><td>Timeline panel, keyframe editor, property interpolation engine.</td></tr>
+            <tr><td>Prototyping</td><td>Prototype viewer, click targets, flow diagrams.</td></tr>
+            <tr><td>Plugins</td><td>Sandboxed runtime, API bridge, SDK types.</td></tr>
+            <tr><td>Export</td><td>PNG, SVG with scale and format options.</td></tr>
+            <tr><td>AI</td><td>Chat panel that creates and modifies canvas elements directly.</td></tr>
           </tbody>
         </table>
 
-        <p>For context, here's how that stacks up against the field. Figma is the benchmark. Stitch (Google's new tool) generates UI from prompts but isn't a general-purpose editor. Penpot is the open source option. I'm not claiming parity with Figma&mdash;that would be absurd&mdash;but this isn't a weekend toy either.</p>
+        <p>I'm not claiming parity with Figma. That would be ridiculous. But this isn't a toy.</p>
 
-        <h2>The numbers</h2>
+        <h2>By the numbers</h2>
 
         <table>
           <thead>
-            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><th></th><th></th></tr>
           </thead>
           <tbody>
-            <tr><td>Source files (designer module)</td><td>93</td></tr>
+            <tr><td>Source files</td><td>93</td></tr>
             <tr><td>Lines of code</td><td>~51,000</td></tr>
-            <tr><td>Commits (48 hours)</td><td>244</td></tr>
+            <tr><td>Commits in 48 hours</td><td>244</td></tr>
             <tr><td>Tasks completed</td><td>~50</td></tr>
-            <tr><td>Tasks remaining</td><td>~38</td></tr>
+            <tr><td>Tasks still open</td><td>~38</td></tr>
             <tr><td>Test files</td><td>64 (204 tests)</td></tr>
             <tr><td>E2E test suites</td><td>12 (~11,000 lines)</td></tr>
-            <tr><td>Wall clock time</td><td>36+ hours</td></tr>
-            <tr><td>Human time at keyboard</td><td>Maybe 2 hours total</td></tr>
+            <tr><td>Time I spent at the keyboard</td><td>Maybe 2 hours</td></tr>
           </tbody>
         </table>
 
-        <p>One person. Most of it unattended. I was outside for a lot of it.</p>
+        <h2>What went wrong</h2>
 
-        <h2>What doesn't work</h2>
+        <p>Plenty. Some tasks came back from review with real problems. The agent occasionally misunderstood a task and built something adjacent to what I asked for. Anything requiring visual judgment was harder than pure logic work.</p>
 
-        <p>It's not magic. Some tasks come back from review with real issues and need a second pass. Occasionally the agent misunderstands a task and builds something adjacent to what I wanted. Complex UI interactions&mdash;things that require visual judgment&mdash;are harder for the agent than pure logic.</p>
+        <p>There's a 4,196-line component file that's what happens when you let an agent add features to the same file without refactoring. There's already a task in the queue to break it apart.</p>
 
-        <p>There's a 4,196-line god component that's a testament to what happens when you let an agent keep adding features to the same file without refactoring. (There's already a task in the queue to break it up. The loop will get to it.)</p>
+        <p>I also had to restart the loop a few times because I messed up the script or the prompt. Operator error.</p>
 
-        <p>And I've had to restart the loop a few times due to my own mistakes&mdash;usually messing up the script or the prompt.</p>
+        <h2>What I keep thinking about</h2>
 
-        <h2>Why this matters</h2>
+        <p>Friday night I had an idea. Sunday afternoon I had a working design tool with collaboration, version branching, animation, and a plugin system. I was outside for most of it.</p>
 
-        <p>There's a lot of discourse about AI coding that falls into two camps: "AI will replace all programmers" and "AI code is garbage." Neither is right. The more interesting truth is in the middle. AI agents are good at implementing well-scoped features when you give them clear context and a way to get feedback. They're bad at architecture, taste, and knowing when to stop. The system around the agent&mdash;the task management, the review process, the queue&mdash;is what determines whether you get good output or garbage.</p>
+        <p>The agent didn't do the hard part. I did the hard part weeks ago when I built td, wrote the review system, set up the loop infrastructure, and figured out how to scope tasks so an agent could complete them cleanly. The weekend was just the payoff.</p>
 
-        <p>I'm not building a startup around this. I built the Figma clone because Google released Stitch updates that inspired me, theirs isn't open source, and I had ideas I wanted to try. The loop let me go from idea to working implementation in a weekend.</p>
+        <p>There's a lot of "AI will replace programmers" and "AI code is garbage" going around. Both miss the point. Agents are good at building well-scoped features when you give them context and feedback. They're bad at architecture and taste. The system you build around the agent determines what comes out the other end.</p>
 
-        <p>That's the part I keep coming back to. Not the technology, but the feeling: "I wonder if I could build a design tool" on Friday night, and by Sunday afternoon, I have one. The system made it possible. The loop is just a <code>while true</code>. The system is what made it work.</p>
-
-        <h2>The tools</h2>
-
-        <p>The plan is to open source all of this. Some of it already is:</p>
+        <p>I plan to open source all of this. Some of it already is:</p>
 
         <ul>
-          <li><a href="https://github.com/marcus/td">td</a>&mdash;Task manager for AI agents. The backbone of the whole workflow.</li>
-          <li><a href="https://github.com/marcus/perch">Perch</a>&mdash;The dev dashboard where the designer lives.</li>
-          <li>The Ralph loop scripts and TUI dashboard are in <a href="https://github.com/marcus/marcus-skills">marcus-skills</a>.</li>
+          <li><a href="https://github.com/marcus/td">td</a> &mdash; the task manager that runs the whole workflow</li>
+          <li><a href="https://github.com/marcus/perch">Perch</a> &mdash; the dev dashboard where the designer lives</li>
+          <li><a href="https://github.com/marcus/marcus-skills">marcus-skills</a> &mdash; the Ralph loop scripts and TUI dashboard</li>
         </ul>
 
       </div>
