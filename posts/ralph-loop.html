@@ -32,41 +32,33 @@
 
       <div class="post-content">
 
-        <p>I built a Figma clone over a weekend. I didn't write any of the code, and I've never read it. A Claude agent ran in a loop for about a day and a half, and by the end there were 93 source files, 51,000 lines of code, and 244 commits in the repo.</p>
+        <p>I went to bed Friday night and woke up Saturday morning to a working design tool. By Sunday there were 93 source files, 51,000 lines of Svelte and TypeScript, and 244 commits. I didn't write any of it. I've never even looked at the code.</p>
 
-        <p>This is vibe coded software. I'm not going to pretend otherwise. But I think it's also an example of how vibe coding doesn't have to produce throwaway garbage, and that has some real implications for the industry.</p>
+        <p>I've been calling it Designer. It's a Figma-style design tool that I'm building as part of a larger dev dashboard. Google had just released updates to Stitch, and since theirs isn't open source, I figured I'd try building my own. The whole thing is vibe coded, and I think it came out surprisingly well.</p>
 
-        <h2>Why a Figma clone</h2>
+        <p>I want to share how I set it up because I think anyone could do this.</p>
 
-        <p>Google released updates to Stitch that I wanted to play with. Stitch isn't open source, so I decided to build my own version inside <a href="https://haplab.com">Designer</a>, a design tool I've been building as part of a dev dashboard project. It started as a weekend experiment and turned into something I'm going to keep developing.</p>
+        <h2>The loop</h2>
 
-        <h2>The Ralph loop</h2>
+        <p>I used a Ralph loop, which is a pattern that's been floating around since mid-2025 — you put a coding agent in a <code>while true</code> loop and let it grind through a plan. I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. The key thing about td is that when an agent finishes a piece of work, it can't approve its own review. A different agent session has to look at it.</p>
 
-        <p>The "Ralph loop" has been around since mid-2025. Geoffrey Huntley popularized it: put a coding agent in a <code>while true</code> loop, point it at a plan, let it run. Named after Ralph Wiggum because the agent just keeps going regardless. There are several open source versions and the basic loop isn't complicated.</p>
+        <p>I wrote a plan, broke it into about 90 tasks under one epic — things like layer panel keyboard navigation, image element support, the auto-layout engine, canvas version history — and started the loop. It's a bash script that runs Claude one iteration at a time. Each iteration picks the top-priority open task, builds it, commits, and exits. The script handles rate limits, timeouts, and fallback models.</p>
 
-        <p>What I want to write about is the scaffolding around my version of it. The loop alone can produce decent results, but without visibility into what's happening and the ability to steer it, you're flying blind. My setup gives me both, and the combination of a solid upfront plan with continuous observability is what I think made the output as good as it is.</p>
+        <p>Then I went to sleep.</p>
 
-        <h2>How I set it up</h2>
+        <h2>Why I think it worked</h2>
 
-        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. The important thing about td is that agents can implement work, but they can't review their own work. A different session has to do that.</p>
+        <p>The plan was good. I spent real time upfront thinking about what Designer needed and breaking it into pieces that were each completable in a single agent session. That planning work is what I think made the difference more than anything else.</p>
 
-        <p>I wrote a high-level plan, broke it into about 90 tasks under a single epic, and scoped each task to a single feature. Things like layer panel keyboard navigation, image element support, the auto-layout engine, and canvas version history. Each task was sized so a single agent session could complete it without running out of context.</p>
+        <p>td also lets me add tasks to the backlog at any time, and the loop picks them up in priority order. So while the agent was working through the plan overnight, I could think of things during the day and just toss them into the queue. I didn't have to restart anything or coordinate with what was running.</p>
 
-        <p>The loop itself is a bash script. It runs <code>claude</code> in print mode, one iteration at a time. Each iteration checks td, picks the highest-priority open task, implements it, commits, and exits. The script handles rate limit backoff, a 45-minute timeout per iteration, and a fallback model if the primary is overloaded.</p>
+        <p>The independent review helped too. Every feature got looked at by a fresh agent session that had no context from the one that built it. That caught problems that would have compounded if they'd gone unnoticed.</p>
 
-        <p>I started it Friday night and went to bed.</p>
+        <p>There's also a little TUI dashboard that shows what the loop is doing — task counts, commits, velocity, logs. I could check in on it when I wanted to and mostly just let it run when I didn't.</p>
 
-        <h2>Three things that helped</h2>
+        <h2>What Designer has after a weekend</h2>
 
-        <p><strong>A live task queue instead of a static checklist.</strong> Most Ralph loops work from a PRD or a markdown file. Mine uses td as a backlog that I can add to at any time. I like that I can think of something at any hour, file it on my phone, and know the loop will pick it up when the priority is right. I don't have to restart anything or coordinate with the running agent. I just add work to the queue and it gets done.</p>
-
-        <p><strong>Forced independent review.</strong> On iteration N, the agent builds the layer panel search feature and submits it for review. On iteration N+1, a brand new agent instance with zero context from the last session looks at what was built. It catches things the implementing agent can't see because it was too close to the work, and the review is a real code review, not just a test pass check.</p>
-
-        <p><strong>Observability and steering.</strong> There's a TUI dashboard that shows task counts, recent commits, velocity, and a scrollable log of what the current iteration is doing. I can see what's happening without interrupting it. And because the task queue is live, I can reprioritize or add work at any point. The loop keeps running and adjusts to whatever's at the top of the backlog. It's less like launching a rocket and more like driving a car.</p>
-
-        <h2>How deep is this</h2>
-
-        <p>"Figma clone" can mean anything from a canvas with draggable squares to a production design tool. The depth is what I think makes this worth writing about, so here's what Designer has after a weekend:</p>
+        <p>"Figma clone" could mean a lot of things, so here's what's there:</p>
 
         <table>
           <thead>
@@ -89,9 +81,7 @@
           </tbody>
         </table>
 
-        <p>It's not Figma. Figma has hundreds of engineers and a decade of work behind it. But for a weekend of autonomous coding, I think the breadth and depth are worth paying attention to.</p>
-
-        <h2>Some numbers</h2>
+        <p>Figma has hundreds of engineers and a decade of development behind it, so I'm not comparing. But for a weekend, I think this is pretty remarkable, and it gives a sense of what's becoming possible for a single person.</p>
 
         <table>
           <thead>
@@ -109,27 +99,23 @@
           </tbody>
         </table>
 
-        <h2>Where it fell down</h2>
+        <h2>Where it fell short</h2>
 
-        <p>Some tasks came back from review with real problems and needed a second pass. The agent occasionally misunderstood a task and built something adjacent to what I asked for. Anything requiring visual judgment was harder than pure logic work.</p>
+        <p>Some tasks came back from review with real problems and needed a second pass. The agent occasionally built something adjacent to what I asked for. Visual judgment calls were harder for it than logic. There's a 4,196-line component file that needs to be broken up, and there's already a task in the queue for that.</p>
 
-        <p>There's a 4,196-line component file that shows what happens when an agent keeps adding features to the same file without stepping back to refactor. There's already a task in the queue to break it apart.</p>
+        <p>I also had to restart the loop a few times because I messed up the script.</p>
 
-        <p>I also had to restart the loop a few times because I messed up the script or the prompt.</p>
+        <h2>Where I think this is going</h2>
 
-        <h2>Why I think this matters for the industry</h2>
+        <p>I spent my weekend planning, designing task structure, and occasionally checking the dashboard. The code wrote itself. I think that ratio is going to keep shifting, and I find that genuinely exciting.</p>
 
-        <p>I've never read any of this code. Fifty completed features, 51,000 lines, a passing test suite, and I couldn't tell you what any specific function does. The system I built around the agent is what kept the quality bar up: the upfront planning, the forced independent review, and the ability to steer the work while it's running.</p>
-
-        <p>The discourse right now tends to split into "AI will replace all programmers" and "AI code is garbage." Both are wrong. Agents can build real software when you give them structure, context, and feedback. They can't do architecture or make taste decisions. The system around the agent is what determines whether the output is usable or not.</p>
-
-        <p>I spent my weekend on planning, task design, and system architecture. The code wrote itself. That ratio is only going to shift further, and I think that's a preview of where the job is headed for a lot of us.</p>
+        <p>I'm not an especially fast programmer. I'm a manager most days. But with the right setup, I went from "I wonder if I could build a design tool" on Friday to having one on Sunday. If I can do this, I think a lot of people can, and I'd love to see what they build.</p>
 
         <p>I plan to open source all of this. Some of it already is:</p>
 
         <ul>
           <li><a href="https://github.com/marcus/td">td</a> &mdash; the task manager that runs the whole workflow</li>
-          <li><a href="https://haplab.com">Designer</a> &mdash; the design tool (part of a larger dev dashboard)</li>
+          <li><a href="https://haplab.com">Designer</a> &mdash; the design tool</li>
           <li><a href="https://github.com/marcus/marcus-skills">marcus-skills</a> &mdash; the Ralph loop scripts and TUI dashboard</li>
         </ul>
 
