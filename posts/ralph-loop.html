@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>I Let an AI Code for 36 Hours Straight — Haplab Blog</title>
-  <meta name="description" content="How a living task queue, independent review, and context isolation turned a Ralph loop into a real Figma clone in a weekend.">
+  <title>Vibe Coding Doesn't Have to Mean Bad Software — Haplab Blog</title>
+  <meta name="description" content="I built a Figma clone over a weekend without reading any of the code. Here's the system that kept the quality high.">
   <link rel="alternate" type="application/rss+xml" title="Haplab Blog" href="/feed.xml">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
@@ -26,49 +26,47 @@
   <main>
     <article>
       <header class="post-header">
-        <h1>I Let an AI Code for 36 Hours Straight</h1>
+        <h1>Vibe Coding Doesn't Have to Mean Bad Software</h1>
         <div class="post-meta">March 21, 2026 &middot; Marcus Vorwaller</div>
       </header>
 
       <div class="post-content">
 
-        <p>Friday night I decided to build a Figma clone. By Sunday afternoon I had one.</p>
+        <p>I built a Figma clone over a weekend. I didn't write any of the code, and I've never read it. A Claude agent ran in a loop for about a day and a half, and by the end there were 93 source files, 51,000 lines of code, and 244 commits in the repo.</p>
 
-        <p>93 source files. 51,000 lines of code. 244 commits. I wrote almost none of it by hand. A Claude agent ran in a loop for a day and a half while I mostly did other things.</p>
-
-        <p>I should back up.</p>
+        <p>This is vibe coded software. I'm not going to pretend otherwise. But I think it's also an example of how vibe coding doesn't have to produce throwaway garbage, and that has some real implications for the industry.</p>
 
         <h2>Why a Figma clone</h2>
 
-        <p>Google released updates to Stitch that I wanted to play with. Stitch isn't open source, so I decided to build my own version inside <a href="https://github.com/marcus/perch">Perch</a>, a dev dashboard I've been working on. This started as "let me see how far I can take this over a weekend" and turned into something that actually works.</p>
+        <p>Google released updates to Stitch that I wanted to play with. Stitch isn't open source, so I decided to build my own version inside <a href="https://github.com/marcus/perch">Perch</a>, a dev dashboard I've been working on. It started as a weekend experiment and turned into something I'm going to keep developing.</p>
 
         <h2>The Ralph loop</h2>
 
-        <p>The "Ralph loop" has been around since mid-2025. Geoffrey Huntley popularized it: put a coding agent in a <code>while true</code> loop, point it at a plan, let it run. Named after Ralph Wiggum because the agent just keeps going regardless. There are several open source versions. The basic loop isn't complicated.</p>
+        <p>The "Ralph loop" has been around since mid-2025. Geoffrey Huntley popularized it: put a coding agent in a <code>while true</code> loop, point it at a plan, let it run. Named after Ralph Wiggum because the agent just keeps going regardless. There are several open source versions and the basic loop isn't complicated.</p>
 
-        <p>What I want to write about is everything around the loop, because the loop by itself produces mediocre output. The scaffolding is what made this work.</p>
+        <p>What I want to write about is the scaffolding around my version of it. The loop alone can produce decent results, but without visibility into what's happening and the ability to steer it, you're flying blind. My setup gives me both, and the combination of a solid upfront plan with continuous observability is what I think made the output as good as it is.</p>
 
         <h2>How I set it up</h2>
 
-        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. One rule: agents can implement work, but they can't review their own work. A different session has to do that.</p>
+        <p>I have a task manager called <a href="https://github.com/marcus/td">td</a> that I built for AI agents. It tracks issues, priorities, and reviews. The important thing about td is that agents can implement work, but they can't review their own work. A different session has to do that.</p>
 
-        <p>I wrote a high-level plan, broke it into about 90 tasks under a single epic, and scoped each one to a single feature. Layer panel keyboard navigation. Image element support. Auto-layout engine. Canvas version history. Each task small enough for one agent session.</p>
+        <p>I wrote a high-level plan, broke it into about 90 tasks under a single epic, and scoped each task to a single feature. Layer panel keyboard navigation. Image element support. Auto-layout engine. Canvas version history. Each one was sized so a single agent session could complete it without running out of context.</p>
 
-        <p>The loop is a bash script. It runs <code>claude</code> in print mode, one iteration at a time. Each iteration: check td, pick the highest-priority open task, implement it, commit, exit. Script handles rate limit backoff, a 45-minute timeout per iteration, and a fallback model if the primary is overloaded.</p>
+        <p>The loop itself is a bash script. It runs <code>claude</code> in print mode, one iteration at a time. Each iteration checks td, picks the highest-priority open task, implements it, commits, and exits. The script handles rate limit backoff, a 45-minute timeout per iteration, and a fallback model if the primary is overloaded.</p>
 
-        <p>I started it and went to bed.</p>
+        <p>I started it Friday night and went to bed.</p>
 
         <h2>What made the difference</h2>
 
-        <p><strong>A live task queue instead of a static checklist.</strong> Most Ralph loops work from a PRD or a markdown file. Mine uses td as a backlog that I can add to at any time. The agent was grinding through P2 tasks at 3 AM. I woke up, thought of something on my phone, filed a P3 bug. The loop picked it up later that day. I never restarted anything.</p>
+        <p><strong>A live task queue instead of a static checklist.</strong> Most Ralph loops work from a PRD or a markdown file. Mine uses td as a backlog that I can add to at any time. The agent was working through P2 tasks at 3 AM. I woke up, thought of something on my phone, and filed a P3 bug. The loop picked it up later that day without me restarting anything.</p>
 
-        <p><strong>Forced independent review.</strong> On iteration N, the agent builds the layer panel search. It submits the work for review. On iteration N+1, a brand new agent instance with zero context from the last session reviews it. Fresh eyes every time. Not "do the tests pass" but actual code review. It catches stuff the implementing agent can't see.</p>
+        <p><strong>Forced independent review.</strong> On iteration N, the agent builds the layer panel search feature and submits it for review. On iteration N+1, a brand new agent instance with zero context from the last session reviews it. Fresh eyes every time. Not "do the tests pass" but an actual code review from a completely clean perspective. It catches things the implementing agent can't see because it was too close to the work.</p>
 
-        <p><strong>One task per iteration.</strong> Each agent starts with context for exactly one task. No accumulated bloat. No confusion about which file it was editing three features ago. Iteration 200 is as sharp as iteration 1. People who try long-running agents usually hit a wall where quality drops as context fills up. This sidesteps it completely.</p>
+        <p><strong>One task per iteration.</strong> Each agent starts with context for exactly one task. There's no accumulated bloat from prior iterations and no confusion about which file it was editing three features ago. Iteration 200 has the same clarity as iteration 1. People who try long-running agents usually see quality degrade as the context window fills up. This approach sidesteps that completely.</p>
 
         <h2>What got built</h2>
 
-        <p>"Figma clone" can mean anything from a canvas with draggable squares to a real design tool. I want to be specific.</p>
+        <p>"Figma clone" can mean anything from a canvas with draggable squares to a production design tool. I want to be specific about what's here, because the depth is what makes this interesting.</p>
 
         <table>
           <thead>
@@ -77,7 +75,7 @@
           <tbody>
             <tr><td>Canvas</td><td>Pan/zoom, viewport culling, LOD rendering that auto-degrades at low zoom, dirty-region tracking, minimap</td></tr>
             <tr><td>Elements</td><td>Rectangles, ellipses, lines, paths, text, groups, frames, images. Gradients, drop shadows, blur, stroke alignment.</td></tr>
-            <tr><td>Frames</td><td>Auto-layout with direction, gap, padding, wrap, constraints. Device presets for iPhone 16 Pro, iPad, Desktop HD, etc.</td></tr>
+            <tr><td>Frames</td><td>Auto-layout with direction, gap, padding, wrap, and constraints. Device presets for iPhone 16 Pro, iPad, Desktop HD, and others.</td></tr>
             <tr><td>Layers</td><td>Search with name filter and type chips. Full keyboard nav. Batch visibility/lock toggle. Drag reorder.</td></tr>
             <tr><td>Tools</td><td>Select, Rectangle, Ellipse, Frame, Line, Pencil, Text, Measure, Hand, Eyedropper. Same shortcuts as Figma.</td></tr>
             <tr><td>Styling</td><td>Color picker with swatches. Gradient editor. Multiple fills and strokes per element.</td></tr>
@@ -86,12 +84,12 @@
             <tr><td>Animation</td><td>Timeline panel, keyframe editor, property interpolation engine.</td></tr>
             <tr><td>Prototyping</td><td>Prototype viewer, click targets, flow diagrams.</td></tr>
             <tr><td>Plugins</td><td>Sandboxed runtime, API bridge, SDK types.</td></tr>
-            <tr><td>Export</td><td>PNG, SVG with scale and format options.</td></tr>
+            <tr><td>Export</td><td>PNG and SVG with scale and format options.</td></tr>
             <tr><td>AI</td><td>Chat panel that creates and modifies canvas elements directly.</td></tr>
           </tbody>
         </table>
 
-        <p>I'm not claiming parity with Figma. That would be ridiculous. But this isn't a toy.</p>
+        <p>I'm not claiming parity with Figma. But this isn't a toy either.</p>
 
         <h2>By the numbers</h2>
 
@@ -105,7 +103,7 @@
             <tr><td>Commits in 48 hours</td><td>244</td></tr>
             <tr><td>Tasks completed</td><td>~50</td></tr>
             <tr><td>Tasks still open</td><td>~38</td></tr>
-            <tr><td>Test files</td><td>64 (204 tests)</td></tr>
+            <tr><td>Test files</td><td>21 (355 tests, all passing)</td></tr>
             <tr><td>E2E test suites</td><td>12 (~11,000 lines)</td></tr>
             <tr><td>Time I spent at the keyboard</td><td>Maybe 2 hours</td></tr>
           </tbody>
@@ -113,19 +111,19 @@
 
         <h2>What went wrong</h2>
 
-        <p>Plenty. Some tasks came back from review with real problems. The agent occasionally misunderstood a task and built something adjacent to what I asked for. Anything requiring visual judgment was harder than pure logic work.</p>
+        <p>Some tasks came back from review with real problems and needed a second pass. The agent occasionally misunderstood a task and built something adjacent to what I asked for. Anything requiring visual judgment was harder than pure logic work.</p>
 
-        <p>There's a 4,196-line component file that's what happens when you let an agent add features to the same file without refactoring. There's already a task in the queue to break it apart.</p>
+        <p>There's a 4,196-line component file that shows what happens when an agent keeps adding features to the same file without stepping back to refactor. There's already a task in the queue to break it apart.</p>
 
-        <p>I also had to restart the loop a few times because I messed up the script or the prompt. Operator error.</p>
+        <p>I also had to restart the loop a few times because I messed up the script or the prompt.</p>
 
-        <h2>What I keep thinking about</h2>
+        <h2>What this means</h2>
 
-        <p>Friday night I had an idea. Sunday afternoon I had a working design tool with collaboration, version branching, animation, and a plugin system. I was outside for most of it.</p>
+        <p>I've never read any of this code. That's the part I keep coming back to. Fifty completed features, 51,000 lines, a test suite, and I couldn't tell you what any specific function does. The system I built around the agent is what kept the quality bar up: the upfront planning, the forced independent review, the one-task-at-a-time isolation.</p>
 
-        <p>The agent didn't do the hard part. I did the hard part weeks ago when I built td, wrote the review system, set up the loop infrastructure, and figured out how to scope tasks so an agent could complete them cleanly. The weekend was just the payoff.</p>
+        <p>That says something about where software is headed. The discourse right now tends to split into "AI will replace all programmers" and "AI code is garbage." Both are wrong. Agents can build real software when you give them structure, context, and feedback. They can't do architecture or make taste decisions. The system around the agent is what determines whether the output is usable or not.</p>
 
-        <p>There's a lot of "AI will replace programmers" and "AI code is garbage" going around. Both miss the point. Agents are good at building well-scoped features when you give them context and feedback. They're bad at architecture and taste. The system you build around the agent determines what comes out the other end.</p>
+        <p>For the software industry, I think this is a preview. Not of programmers becoming obsolete, but of the job changing. I spent my weekend on planning, task design, and system architecture. The code wrote itself. That ratio is only going to shift further.</p>
 
         <p>I plan to open source all of this. Some of it already is:</p>
 
