@@ -68,6 +68,11 @@
 
         <h2>What it built over the weekend</h2>
 
+        <figure>
+          <img src="/images/designer.png" alt="The Designer tool built by the backlog loop, showing a canvas with shapes, layers panel, and AI chat" class="lightbox-trigger" style="cursor: zoom-in;">
+          <figcaption>Designer, built almost entirely by the loop.</figcaption>
+        </figure>
+
         <p>I tested this by building a Figma-style design tool I'm calling Designer, which lives inside a larger dev dashboard I've been working on. The initial plan had around 60 to 70 tasks. I kicked it off Friday night and woke up Saturday morning to what is, by any measure, a solid vibe-coded design tool.</p>
 
         <p>I kept adding tasks over the weekend. I was usually a few tasks ahead of the agent, which is exactly the right balance. I could walk away from my laptop for hours and come back to find more things done. Here's what Designer ended up with after all of that:</p>
@@ -101,8 +106,10 @@
 
         <p>I also built a small dashboard so I can actually see what the loop is up to. It shows recently completed tasks, how long each one took, and what's coming up next. It's a Python Rich TUI that tails the td log for a given epic, so when I come back to my desk after a few hours away, I can see exactly what happened while I was gone.</p>
 
-        <!-- Dashboard screenshot placeholder — betamax capture in progress -->
-        <p><em>[Dashboard screenshot — coming soon]</em></p>
+        <figure>
+          <img src="/images/ralph-dashboard.png" alt="The Ralph loop TUI dashboard showing task counts, commit velocity, and iteration logs" class="lightbox-trigger" style="cursor: zoom-in;">
+          <figcaption>The loop dashboard. Task counts, commit velocity, and a live view of what the current iteration is doing.</figcaption>
+        </figure>
 
         <h2>What's next</h2>
 
@@ -114,6 +121,8 @@
           <li><a href="https://github.com/marcus/td">td</a> — task manager built for AI agents, which is what drives the backlog</li>
           <li><a href="https://github.com/marcus/sidecar">sidecar</a> — dev dashboard for seeing what agents are up to</li>
         </ul>
+
+        <p>Interestingly, <a href="https://www.augmentcode.com/lp/intent-ralph-loop">Augment is building something very similar</a> as a product, with a full company behind it. I built this with open source tools and an AI assistant on my couch, which is kind of the whole point.</p>
 
         <p>And if you've got a better name for this workflow than "the backlog loop," I'm all ears.</p>
 
