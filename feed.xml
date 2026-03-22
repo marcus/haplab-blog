@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Haplab Blog</title>
+    <link>https://blog.haplab.com</link>
+    <description>Writing by Marcus Vorwaller</description>
+    <language>en-us</language>
+    <atom:link href="https://blog.haplab.com/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Hello World</title>
+      <link>https://blog.haplab.com/posts/hello-world.html</link>
+      <guid>https://blog.haplab.com/posts/hello-world.html</guid>
+      <pubDate>Sat, 21 Mar 2026 00:00:00 +0000</pubDate>
+      <description>First post. A quick look at what we're building here and why.</description>
+    </item>
+
+  </channel>
+</rss>
