@@ -7,6 +7,10 @@
   <meta name="description" content="I stumbled into a workflow where agents just keep working as long as I keep writing tickets. Here's how it works and what it built.">
   <link rel="alternate" type="application/rss+xml" title="Haplab Blog" href="/feed.xml">
   <link rel="stylesheet" href="/style.css">
+  <script>
+    // Prevent flash of wrong theme
+    (function(){var t=localStorage.getItem('haplab-theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);})();
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 </head>
 <body>
@@ -19,6 +23,7 @@
       <ul class="site-nav">
         <li><a href="/">Home</a></li>
         <li><a href="/feed.xml">RSS</a></li>
+        <li><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light/dark mode">🌙</button></li>
       </ul>
     </nav>
   </header>
@@ -32,62 +37,54 @@
 
       <div class="post-content">
 
-        <p>For the past few months I've been experimenting with different ways of working with agents — that's what led to projects like <a href="https://github.com/marcus/sidecar">sidecar</a> and <a href="https://github.com/marcus/td">td</a>, plus a bunch of other stuff I haven't open sourced yet. This weekend I stumbled into a way of working that I'm finding really nice, and it feels like it's pointing toward something.</p>
+        <p>For the past few months I've been experimenting with different ways of working with agents, which is what led to projects like <a href="https://github.com/marcus/sidecar">sidecar</a> and <a href="https://github.com/marcus/td">td</a>, plus a bunch of other stuff I haven't open sourced yet. This weekend I sort of stumbled into a workflow I'm finding really nice, and it feels like it's pointing somewhere interesting.</p>
 
-        <p>I need a good name for it. "Continuous development" is close but not quite right. "Autopilot" is too vague. I'll figure it out — for now I'm calling it the backlog loop.</p>
+        <p>I need a good name for it. "Continuous development" is close but doesn't quite get there. "Autopilot" is too vague. I've been calling it the backlog loop for now, which will do until something better comes along.</p>
 
         <h2>Where this came from</h2>
 
-        <p>I'd been playing with Ralph loops — the idea of running agents in a loop with minimal intervention. The concept is great but in practice I found it a bit too loose and non-deterministic for my taste. This is a variation that added more structure and, for me at least, works a lot better.</p>
+        <p>I'd been playing with Ralph loops — the idea of running agents in a loop with minimal human intervention. The concept is great but in practice I found it a little too loose and non-deterministic for my taste. This is a variation that added more structure and, for me at least, works a lot better.</p>
 
-        <p>The basic idea: I use <a href="https://github.com/marcus/td">td</a>, my task manager, to create an epic and add stories to it. Then I start a loop that works through those stories one at a time. While work is only happening sequentially — not in parallel — it still seems to come together at roughly the same speed, and it completely eliminates all the complexity of worktrees, multiple branches, and merging. I'll take that trade every time.</p>
+        <p>The way it works is: I use <a href="https://github.com/marcus/td">td</a>, my task manager, to create an epic and add a few stories to it, then I start a loop that iterates over those stories sequentially. Any task manager would work here — if you're using Linear or Jira or just a markdown file, the same idea applies. Only one task is worked on at a time, which sounds like a limitation, but it completely eliminates worktrees, multiple branches, and merging. And I found things come together at roughly the same speed anyway, so I'll take that trade every time.</p>
 
-        <p>My job becomes managing the queue. The agent just works.</p>
+        <p>My actual job becomes managing the queue. The agent just works in the background.</p>
 
         <h2>How the loop works</h2>
 
         <figure>
-          <img src="/images/ralph-loop-diagram.png" alt="Diagram showing the backlog loop: You add a ticket → Backlog → Agent picks it up → Review → loop repeats" style="max-width: 100%; border-radius: 6px; border: 1px solid var(--border);">
-          <figcaption>The cycle. Simple in concept, useful in practice.</figcaption>
+          <img src="/images/ralph-loop-diagram.png" alt="Diagram showing the backlog loop cycle: you add a ticket to the backlog, an agent picks it up, implements it, another agent reviews it, and the cycle repeats" class="lightbox-trigger" style="cursor: zoom-in;">
+          <figcaption>The loop, roughly. You write tickets, agents work them, fresh sessions review the results, repeat.</figcaption>
         </figure>
 
-        <p>Each loop iteration is a fresh agent session — no memory of what happened before. When an agent starts, it:</p>
+        <p>Each loop iteration is a fresh agent session with no memory of what happened before. When an agent starts, it checks for any tasks sitting in review — up to three — and reviews them, flagging issues or creating new follow-up tickets for anything that needs attention. Then it picks up the highest-priority open task and works on it. Before marking it done, it has to provide two things: a passing test run and screenshots of the feature actually working.</p>
 
-        <ol>
-          <li>Checks if there are any tasks in review (up to three) and reviews them, flagging issues or creating new tickets if something needs follow-up</li>
-          <li>Picks up the highest-priority open task and works on it</li>
-          <li>Provides two forms of proof before marking done: a passing test run and screenshots of the feature actually working</li>
-        </ol>
+        <p>Then the next session starts and does the exact same thing.</p>
 
-        <p>Then the next session starts and does the same thing. That review step matters a lot — an agent can't approve its own work. A fresh session has to look at it with clean eyes.</p>
+        <p>That review step matters more than it might look like. An agent reviewing its own work tends to see what it expected to see. A separate fresh session reviewing it catches different things, and the separation is what makes that useful. Fresh sessions also keep the context window from getting bloated — long-running sessions drift in subtle ways, and starting clean for each task keeps each one focused.</p>
 
-        <p>The other key insight is that fresh sessions keep the context window from getting bloated. Long-running sessions start to drift. Each task getting its own session means each task gets focused attention.</p>
+        <p>Priority order also turned out to help more than I expected. If I think of something that needs to happen sooner, I just create a higher-priority ticket and it floats to the top of the queue on the next iteration. No stopping anything, no reorganizing. And since I'm already chatting with my OpenClaw agent to create and refine tasks, adjusting the queue is as easy as saying "actually, let's skip that one" or "break this into smaller pieces."</p>
 
-        <p>One other thing worth mentioning: tasks are worked in priority order. So if I think of something urgent, I can just create a high-priority ticket and it'll float to the top of the queue on the next iteration. I don't need to stop anything or reorganize — it just happens. And since I'm chatting with my OpenClaw agent to create and refine tasks anyway, adjusting the queue is as easy as saying "actually skip that one" or "let's break this into smaller pieces."</p>
-
-        <p>For this to work, the codebase needs to be organized in a way that agents can navigate. Skills files, clear conventions, predictable directory structure. There's some upfront work to get that in place. But once it's there, the loop is remarkably simple — it doesn't need babysitting.</p>
+        <p>One thing that doesn't change from any other agentic setup: the codebase needs to be organized in a way that agents can actually navigate. Skills files, clear conventions, predictable directory structure. There's upfront work to get that in place. Once it's there, the loop doesn't need babysitting.</p>
 
         <h2>What it built over the weekend</h2>
 
-        <p>I proved this out by creating a plan for a Figma-style design tool — Designer — that lives inside a larger dev dashboard project I've been building. The initial plan had around 60–70 tasks. I kicked it off Friday night and woke up Saturday to what is, by any measure, a solid vibe-coded design tool.</p>
+        <p>I tested this by building a Figma-style design tool — I'm calling it Designer — that lives inside a larger dev dashboard I've been working on. The initial plan had around 60 to 70 tasks. I kicked it off Friday night and woke up Saturday morning to what is, by any measure, a solid vibe-coded design tool.</p>
 
-        <p>I kept adding tasks over the weekend. Generally I found I was always a few tasks ahead of the agent, which is exactly the right balance — I can walk away from my laptop and work is still getting done.</p>
-
-        <p>Here's what Designer has after all that:</p>
+        <p>I kept adding tasks over the weekend. I was usually a few tasks ahead of the agent, which is exactly the right balance — I could walk away from my laptop for hours and come back to find more things done. Here's what Designer ended up with after all of that:</p>
 
         <ul>
           <li><strong>Canvas</strong> — pan and zoom, viewport culling, LOD rendering, dirty-region tracking, minimap, rulers, and guides with on-canvas numeric editing</li>
           <li><strong>Elements</strong> — rectangles, ellipses, lines, arrows, paths, text, groups, frames, images. Multiple fills and strokes per element. Blend modes (16 of them). Drop shadow, inner shadow, blur, and background blur</li>
-          <li><strong>Text</strong> — rich text editing with mixed styles per character. Google Fonts integration with a full font picker (search, categories, preview, favorites). Variable font axes and OpenType feature controls</li>
+          <li><strong>Text</strong> — rich text editing with mixed styles per character. Google Fonts integration with a full font picker including search, categories, preview, and favorites. Variable font axes and OpenType feature controls</li>
           <li><strong>Frames</strong> — auto-layout with direction, gap, padding, wrap, and constraints. Device presets and artboard templates with a gallery. Clip content toggle</li>
           <li><strong>Layers panel</strong> — search with name filter and type chips. Full keyboard navigation. Batch visibility and lock toggling. Drag reorder and nesting. Scroll to selected</li>
           <li><strong>Tools</strong> — Select, Rectangle, Ellipse, Frame, Line, Pencil (with bezier fitting and pressure sensitivity), Pen (with bezier curve editing), Text, Hand, Eyedropper, and a Measure tool</li>
-          <li><strong>Styling</strong> — full color picker (HSV field, hue/opacity sliders, hex/RGB/HSL inputs). Gradient editor. Copy/paste styles between elements</li>
+          <li><strong>Styling</strong> — full color picker with HSV field, hue/opacity sliders, and hex/RGB/HSL inputs. Gradient editor. Copy/paste styles between elements</li>
           <li><strong>Vector editing</strong> — boolean operations (union, subtract, intersect, exclude). Vector and alpha masks. Enhanced pencil tool with eraser mode</li>
-          <li><strong>Components</strong> — component library panel with search, drag-to-canvas, instance actions. Design token system with CRUD, CSS/JSON export, style picker, bulk apply/detach</li>
+          <li><strong>Components</strong> — component library panel with search, drag-to-canvas, and instance actions. Design token system with CRUD, CSS/JSON export, style picker, and bulk apply/detach</li>
           <li><strong>Collaboration</strong> — real-time cursors and remote selections over WebSocket</li>
           <li><strong>Versioning</strong> — version history timeline with search, thumbnails, diffs, and preview mode. Branch and merge for canvas versions</li>
-          <li><strong>AI integration</strong> — chat panel that creates and modifies canvas elements directly. Click-to-reference elements in chat. Visual feedback for agent operations with pulsing highlights and auto-pan. AI image generation (OpenAI + Gemini). Generative layout with prompt starters</li>
+          <li><strong>AI integration</strong> — chat panel that creates and modifies canvas elements directly. Click-to-reference elements in chat. Visual feedback for agent operations with pulsing highlights and auto-pan. AI image generation with OpenAI and Gemini. Generative layout with prompt starters</li>
           <li><strong>Developer handoff</strong> — inspect mode with CSS generation and red-line measurements</li>
           <li><strong>Design critique</strong> — WCAG contrast checking, spacing, alignment, font size, and touch target audits</li>
           <li><strong>Animation</strong> — timeline panel, keyframe editor, property interpolation</li>
@@ -95,38 +92,32 @@
           <li><strong>Plugins</strong> — sandboxed runtime, API bridge, SDK types</li>
           <li><strong>Export</strong> — PNG, SVG, and PDF with scale and format options</li>
           <li><strong>Mobile</strong> — iOS Safari canvas rendering fixes, touch-action support</li>
-          <li><strong>Keyboard shortcuts</strong> — organized by category with a shortcuts overlay. Z-order operations, smart selection (select all similar), zoom presets</li>
+          <li><strong>Keyboard shortcuts</strong> — organized by category with a shortcuts overlay. Z-order operations, smart selection, and zoom presets</li>
         </ul>
 
-        <p>78 component files. About 50,000 lines of Svelte and TypeScript. The perch repo has 1,062 commits total, the majority from the loop running over the past few weeks. There's a test suite — a mix of unit tests and Playwright e2e specs. Honestly the coverage isn't where I'd want it for a production app, but it exists and the agents use it. Something to improve next time around.</p>
+        <p>About 78 component files and 50,000 lines of Svelte and TypeScript. The perch repo is sitting at 1,062 commits total, most of them from the loop running over the past few weeks. There's a test suite — unit tests and Playwright e2e specs. Coverage isn't where I'd want it for something going to production, but it exists and the agents use it. That's something I'll work on next time around.</p>
 
-        <p>I didn't write any of that code. I haven't read most of it. That's kind of wild to say out loud.</p>
+        <p>I didn't write any of that code. I haven't read most of it. That's a strange thing to say out loud.</p>
 
         <h2>The dashboard</h2>
 
-        <p>I also built a little dashboard so I can see what the loop is up to — recently completed tasks, how long each one took, what's coming up next. It's a Python Rich TUI that tails the td log for a given epic. When I come back to my laptop after a few hours away, I can see exactly what happened.</p>
+        <p>I also built a small dashboard so I can actually see what the loop is up to. It shows recently completed tasks, how long each one took, and what's coming up next. It's a Python Rich TUI that tails the td log for a given epic — when I come back to my desk after a few hours away, I can see exactly what happened while I was gone.</p>
 
         <!-- Dashboard screenshot placeholder — betamax capture in progress -->
         <p><em>[Dashboard screenshot — coming soon]</em></p>
 
-        <h2>What makes this feel different</h2>
+        <h2>What's next</h2>
 
-        <p>I've been building software for a long time. This feels like something shifted.</p>
+        <p>I'm going to keep running with this. The rhythm of it — where development is happening as fast as I come up with ideas and write them down — is something I want to understand better. I can be out walking and think of a feature, jot it into td on my phone, and by the time I'm back at my desk it might already be done.</p>
 
-        <p>It's not that the AI is doing magic. The individual tasks still require good tickets — "make the app better" isn't going to produce great results. The quality of output tracks closely to the quality of what goes into the backlog. That part hasn't changed.</p>
-
-        <p>What's changed is the rhythm. Development is now happening as fast as I come up with ideas and write them down. There's no gap between "I want this feature" and "work has started on this feature." I add a ticket, and the next time the loop picks up, that ticket gets worked on. I can be out walking and think of something, jot it down on my phone, and by the time I'm back at my desk it might already be done.</p>
-
-        <p>The job description has shifted. For Designer, what I'm actually doing is: thinking about what the software should be, writing tickets clear enough for an agent to implement, and occasionally reviewing what came back. That's it. There's no "sit down and implement this" step.</p>
-
-        <p>I'm going to keep running with this. The tools I used are open source if you want to try something similar:</p>
+        <p>The tools are open source if you want to try something similar:</p>
 
         <ul>
-          <li><a href="https://github.com/marcus/td">td</a> — task manager built for AI agents (the backlog engine)</li>
-          <li><a href="https://github.com/marcus/sidecar">sidecar</a> — dev dashboard that shows what's happening</li>
+          <li><a href="https://github.com/marcus/td">td</a> — task manager built for AI agents, which is what drives the backlog</li>
+          <li><a href="https://github.com/marcus/sidecar">sidecar</a> — dev dashboard for seeing what agents are up to</li>
         </ul>
 
-        <p>And if you've got a good name for this workflow, I'm all ears.</p>
+        <p>And if you've got a better name for this workflow than "the backlog loop," I'm all ears.</p>
 
       </div>
     </article>
@@ -140,5 +131,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="/theme.js"></script>
+  <script src="/lightbox.js"></script>
 </body>
 </html>

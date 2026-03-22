@@ -7,6 +7,10 @@
   <meta name="description" content="Writing by Marcus Vorwaller">
   <link rel="alternate" type="application/rss+xml" title="Haplab Blog" href="/feed.xml">
   <link rel="stylesheet" href="/style.css">
+  <script>
+    // Prevent flash of wrong theme
+    (function(){var t=localStorage.getItem('haplab-theme')||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);})();
+  </script>
 </head>
 <body>
 
@@ -18,6 +22,7 @@
       <ul class="site-nav">
         <li><a href="/">Home</a></li>
         <li><a href="/feed.xml">RSS</a></li>
+        <li><button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light/dark mode">🌙</button></li>
       </ul>
     </nav>
   </header>
@@ -26,9 +31,9 @@
     <ul class="post-list">
 
       <li>
-        <div class="post-meta">March 21, 2026</div>
-        <h2 class="post-title"><a href="/posts/ralph-loop.html">The Continuous Developer</a></h2>
-        <p class="post-desc">What happens when you organize a codebase so agents can work on it continuously, and the only human job is writing tickets?</p>
+        <div class="post-meta">March 22, 2026</div>
+        <h2 class="post-title"><a href="/posts/ralph-loop.html">The Backlog Loop</a></h2>
+        <p class="post-desc">I stumbled into a workflow where agents just keep working as long as I keep writing tickets. Here's how it works and what it built.</p>
       </li>
 
     </ul>
@@ -38,6 +43,8 @@
     <span>Marcus Vorwaller</span>
     <a href="https://haplab.com">haplab.com</a>
   </footer>
+
+  <script src="/theme.js"></script>
 
 </body>
 </html>
