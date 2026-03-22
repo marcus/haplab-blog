@@ -336,6 +336,22 @@ main {
   opacity: 0.88;
 }
 
+.post-content figure {
+  margin: 2rem 0;
+}
+
+.post-content figure img {
+  margin-bottom: 0.5rem;
+}
+
+.post-content figcaption {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+  padding: 0 0.25rem;
+}
+
 /* Blockquote text color in light mode */
 
 [data-theme="light"] .post-content blockquote {

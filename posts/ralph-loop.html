@@ -43,9 +43,9 @@
 
         <h2>Where this came from</h2>
 
-        <p>I'd been playing with Ralph loops — the idea of running agents in a loop with minimal human intervention. The concept is great but in practice I found it a little too loose and non-deterministic for my taste. This is a variation that added more structure and, for me at least, works a lot better.</p>
+        <p>I'd been playing with Ralph loops, the idea of running agents in a loop with minimal human intervention. The concept is great but in practice I found it a little too loose and non-deterministic for my taste. This is a variation that added more structure and, for me at least, works a lot better.</p>
 
-        <p>The way it works is: I use <a href="https://github.com/marcus/td">td</a>, my task manager, to create an epic and add a few stories to it, then I start a loop that iterates over those stories sequentially. Any task manager would work here — if you're using Linear or Jira or just a markdown file, the same idea applies. Only one task is worked on at a time, which sounds like a limitation, but it completely eliminates worktrees, multiple branches, and merging. And I found things come together at roughly the same speed anyway, so I'll take that trade every time.</p>
+        <p>The way it works is: I use <a href="https://github.com/marcus/td">td</a>, my task manager, to create an epic and add a few stories to it, then I start a loop that iterates over those stories sequentially. Any task manager would work here. If you're using Linear or Jira or just a markdown file, the same idea applies. Only one task is worked on at a time, which sounds like a limitation, but it completely eliminates worktrees, multiple branches, and merging. And I found things come together at roughly the same speed anyway, so I'll take that trade every time.</p>
 
         <p>My actual job becomes managing the queue. The agent just works in the background.</p>
 
@@ -56,11 +56,11 @@
           <figcaption>The loop, roughly. You write tickets, agents work them, fresh sessions review the results, repeat.</figcaption>
         </figure>
 
-        <p>Each loop iteration is a fresh agent session with no memory of what happened before. When an agent starts, it checks for any tasks sitting in review — up to three — and reviews them, flagging issues or creating new follow-up tickets for anything that needs attention. Then it picks up the highest-priority open task and works on it. Before marking it done, it has to provide two things: a passing test run and screenshots of the feature actually working.</p>
+        <p>Each loop iteration is a fresh agent session with no memory of what happened before. When an agent starts, it checks for any tasks sitting in review (up to three) and reviews them, flagging issues or creating new follow-up tickets for anything that needs attention. Then it picks up the highest-priority open task and works on it. Before marking it done, it has to provide two things: a passing test run and screenshots of the feature actually working.</p>
 
         <p>Then the next session starts and does the exact same thing.</p>
 
-        <p>That review step matters more than it might look like. An agent reviewing its own work tends to see what it expected to see. A separate fresh session reviewing it catches different things, and the separation is what makes that useful. Fresh sessions also keep the context window from getting bloated — long-running sessions drift in subtle ways, and starting clean for each task keeps each one focused.</p>
+        <p>I've tried it with and without the review step, and the review step makes a huge difference. It's turned out to be worth the extra time and tokens. An agent reviewing its own work tends to see what it expected to see, but a separate fresh session catches different things. Starting clean for each task also keeps the context window from getting bloated, which helps with focus.</p>
 
         <p>Priority order also turned out to help more than I expected. If I think of something that needs to happen sooner, I just create a higher-priority ticket and it floats to the top of the queue on the next iteration. No stopping anything, no reorganizing. And since I'm already chatting with my OpenClaw agent to create and refine tasks, adjusting the queue is as easy as saying "actually, let's skip that one" or "break this into smaller pieces."</p>
 
@@ -68,9 +68,9 @@
 
         <h2>What it built over the weekend</h2>
 
-        <p>I tested this by building a Figma-style design tool — I'm calling it Designer — that lives inside a larger dev dashboard I've been working on. The initial plan had around 60 to 70 tasks. I kicked it off Friday night and woke up Saturday morning to what is, by any measure, a solid vibe-coded design tool.</p>
+        <p>I tested this by building a Figma-style design tool I'm calling Designer, which lives inside a larger dev dashboard I've been working on. The initial plan had around 60 to 70 tasks. I kicked it off Friday night and woke up Saturday morning to what is, by any measure, a solid vibe-coded design tool.</p>
 
-        <p>I kept adding tasks over the weekend. I was usually a few tasks ahead of the agent, which is exactly the right balance — I could walk away from my laptop for hours and come back to find more things done. Here's what Designer ended up with after all of that:</p>
+        <p>I kept adding tasks over the weekend. I was usually a few tasks ahead of the agent, which is exactly the right balance. I could walk away from my laptop for hours and come back to find more things done. Here's what Designer ended up with after all of that:</p>
 
         <ul>
           <li><strong>Canvas</strong> — pan and zoom, viewport culling, LOD rendering, dirty-region tracking, minimap, rulers, and guides with on-canvas numeric editing</li>
@@ -95,20 +95,18 @@
           <li><strong>Keyboard shortcuts</strong> — organized by category with a shortcuts overlay. Z-order operations, smart selection, and zoom presets</li>
         </ul>
 
-        <p>About 78 component files and 50,000 lines of Svelte and TypeScript. The perch repo is sitting at 1,062 commits total, most of them from the loop running over the past few weeks. There's a test suite — unit tests and Playwright e2e specs. Coverage isn't where I'd want it for something going to production, but it exists and the agents use it. That's something I'll work on next time around.</p>
-
-        <p>I didn't write any of that code. I haven't read most of it. That's a strange thing to say out loud.</p>
+        <p>About 78 component files and 50,000 lines of Svelte and TypeScript. The perch repo is sitting at 1,062 commits total, There's a test suite with unit tests and Playwright e2e specs. Coverage isn't where I'd want it for something going to production, but it exists and the agents use it. That's something to work on next time around.</p>
 
         <h2>The dashboard</h2>
 
-        <p>I also built a small dashboard so I can actually see what the loop is up to. It shows recently completed tasks, how long each one took, and what's coming up next. It's a Python Rich TUI that tails the td log for a given epic — when I come back to my desk after a few hours away, I can see exactly what happened while I was gone.</p>
+        <p>I also built a small dashboard so I can actually see what the loop is up to. It shows recently completed tasks, how long each one took, and what's coming up next. It's a Python Rich TUI that tails the td log for a given epic, so when I come back to my desk after a few hours away, I can see exactly what happened while I was gone.</p>
 
         <!-- Dashboard screenshot placeholder — betamax capture in progress -->
         <p><em>[Dashboard screenshot — coming soon]</em></p>
 
         <h2>What's next</h2>
 
-        <p>I'm going to keep running with this. The rhythm of it — where development is happening as fast as I come up with ideas and write them down — is something I want to understand better. I can be out walking and think of a feature, jot it into td on my phone, and by the time I'm back at my desk it might already be done.</p>
+        <p>I'm going to keep running with this. The rhythm of it, where development is happening as fast as I come up with ideas and write them down, is something I want to understand better. I can be out walking and think of a feature, message my <a href="https://openclaw.ai">OpenClaw</a> agent on Discord from my phone to create and refine the task, and by the time I'm back at my desk it might already be done.</p>
 
         <p>The tools are open source if you want to try something similar:</p>
 
